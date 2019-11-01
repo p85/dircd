@@ -8,6 +8,7 @@ args;
 const configFile: string = args.c;
 const debugMode: boolean = args.d;
 const myVersion: string = process.env.npm_package_version;
+const listenOnAll: boolean = args.i || false;
 
 console.log(`dircd v${myVersion} started...`);
 console.log(`Config File: ${configFile}`);
@@ -36,7 +37,7 @@ const client: Client = new Client(discordToken);
 client.connect()
 .then(() => {
   const channels: IServer[] = client.channels;
-  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client);
+  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client, listenOnAll);
   client.ircd = ircd; // TODO: this is ugly, needs to be done somewhat different...
 })
 .catch(err => {

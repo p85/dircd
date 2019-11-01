@@ -11,7 +11,8 @@ export class IRCD {
     private debug: boolean = false,
     private channels: IServer[],
     private serverhostname: string = `localghost`,
-    private clientInstance: Client
+    private clientInstance: Client,
+    private listenOnAll: boolean
   ) {
     this.startServer();
   }
@@ -139,8 +140,14 @@ export class IRCD {
         console.error(`Closing Connection: with Error?: ${hasError}`);
       });
     });
-    server.listen(this.port);
-    console.log(`IRCD started on Port ${this.port}`);
+    if (this.listenOnAll) {
+      server.listen(this.port);
+      console.log(`IRCD started on Port ${this.port}, Listening on 0.0.0.0`);
+      console.log(`WARNING! Anyone can connect to this dircd instance and this is probably not that what you want!`);
+    } else {
+      server.listen(this.port, `127.0.0.1`);
+      console.log(`IRCD started on Port ${this.port}, Listening on 127.0.0.1`);
+    }
   }
 
   /**
