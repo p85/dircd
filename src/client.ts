@@ -26,7 +26,6 @@ export class Client {
       });
       this.client.on(`message`, msg => {
         const chid: string = msg.channel.id;
-        // const userid: string = msg.author.id;
         const fromUser: string = msg.author.username;
         this.receiveFromDiscord(chid, fromUser, msg.cleanContent);
       });
@@ -69,7 +68,7 @@ export class Client {
     let cha;
     this.channels.find(server => {
       const haveChan = server.channels.find(ch => ch.id === channelId);
-      cha = haveChan;
+      if (!cha && haveChan) cha = haveChan;
     });
     return cha;
   }

@@ -181,7 +181,7 @@ export class IRCD {
       `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD\n`
     );
     socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :meh...\n`
+      `:${nickname}!${username}@${hostname} 003 ${nickname} :guess we're online.\n`
     );
   }
 
