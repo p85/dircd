@@ -18,6 +18,8 @@ export interface IServerChannelUser {
 
 export interface IConfigFile {
   discordToken: string;
+  port?: number;
+  localServerName?: string;
 }
 
 export interface IParsedUserLine {
@@ -27,6 +29,13 @@ export interface IParsedUserLine {
   username: string;
   hostname: string;
   socket;
+}
+
+export interface IOnlineUsers {
+  socket;
+  nickname: string;
+  username: string;
+  hostname: string;
 }
 
 export interface IParsedUserObject {

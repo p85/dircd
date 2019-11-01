@@ -11,6 +11,6 @@ export const args = yargs
   alias: `debug`,
   describe: `Debug Mode, Shows more Messages (may slow Things down)`,
   type: `boolean`,
-  default: true
+  default: false
 })
 .argv;

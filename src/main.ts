@@ -20,6 +20,9 @@ if (!configFile || !fs.existsSync(configFile)) {
 console.log(`Reading Config File ${configFile}...`);
 const config: IConfigFile = JSON.parse(fs.readFileSync(configFile).toString());
 const discordToken: string = config.discordToken;
+const port: number = config.port || 6667;
+const localServerName: string = config.localServerName || `localghost`;
+
 
 if (!discordToken) {
   console.error(`DiscordToken Property not found in Configfile!`);
@@ -33,7 +36,7 @@ const client: Client = new Client(discordToken);
 client.connect()
 .then(() => {
   const channels: IServer[] = client.channels;
-  const ircd: IRCD = new IRCD(6667, debugMode, channels, `localghost`, client);
+  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client);
   client.ircd = ircd; // TODO: this is ugly, needs to be done somewhat different...
 })
 .catch(err => {

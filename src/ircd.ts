@@ -1,11 +1,10 @@
 import * as Net from "net";
 import { Client } from "./client";
-import { IParsedUserLine, IParsedUserObject, IServer } from "./interfaces";
-
+import { IParsedUserLine, IParsedUserObject, IServer, IOnlineUsers } from "./interfaces";
 
 
 export class IRCD {
-  private users: any[] = [];
+  private users: IOnlineUsers[] = [];
 
   constructor(
     private port: number = 6667,
@@ -28,10 +27,8 @@ export class IRCD {
       let messageQueue: string[] = [];
       const userObject: IParsedUserLine = {} as any;
       userObject.hostname = socket.remoteAddress;
-      socket.on("connect", () => {
-        console.log(`have connection from: ${userObject.hostname}`);
-        timerHandle = setInterval(() => socket.write(`PING: 1\n`), 1000);
-      });
+      console.log(`connection from: ${userObject.hostname}`);
+      timerHandle = setInterval(() => socket.write(`PING :1\n`), 60 * 1000); // once a minute, actually we dont need ping/ponging, its just for compatibility issues
       socket.on("data", msg => {
         const readadbleMsg: string = msg.toString().trim();
         const readableMsgArr: string[] = readadbleMsg.split(`\n`);

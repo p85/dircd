@@ -1,3 +1,5 @@
 {
-  "discordToken": "<your-discord-token-here>"
+  "discordToken": "<your-discord-token-here>" // how to find my discord token? --> https://lmgtfy.com/?q=how+to+find+discord+token&s=g
+  "port": 6667,
+  "localServerName": "localghost"
 }
