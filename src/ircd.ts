@@ -213,7 +213,7 @@ export class IRCD {
       `:${nickname}!${username}@${hostname} 003 ${nickname} :---\n`
     );
     socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :Please wait, while we attempt to join all your Channels...`
+      `:${nickname}!${username}@${hostname} 003 ${nickname} :Please wait, while we attempt to join all your Channels...\n`
     );
   }
 
