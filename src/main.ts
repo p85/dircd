@@ -3,6 +3,7 @@ import {args} from './args';
 import * as fs from 'fs';
 import { Client } from './client';
 import { IRCD } from './ircd';
+import {IServer, IConfigFile} from './interfaces';
 
 args;
 const configFile: string = args.c;
@@ -13,7 +14,7 @@ if (!configFile || !fs.existsSync(configFile)) {
   process.exit(1);
 }
 
-const config = JSON.parse(fs.readFileSync(configFile).toString()); // TODO: interface!
+const config: IConfigFile = JSON.parse(fs.readFileSync(configFile).toString());
 const discordToken: string = config.discordToken;
 
 if (!discordToken) {
@@ -25,9 +26,8 @@ if (!discordToken) {
 const client: Client = new Client(discordToken);
 client.connect()
 .then(() => {
-  // const discordUser: string = client.discordUser;
-  const channels = client.channels;
-  const ircd: IRCD = new IRCD(6667, debugMode, channels, `localhorst`, client);
+  const channels: IServer[] = client.channels;
+  const ircd: IRCD = new IRCD(6667, debugMode, channels, `localghost`, client);
   client.ircd = ircd;
 })
 .catch(err => {
