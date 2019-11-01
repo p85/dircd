@@ -296,11 +296,14 @@ export class IRCD {
    * @param message 
    */
   public injectChannelMessage(servername: string, channelname: string, fromUser: string, message: string) {
-    const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${message}\n`;
+    const messages: string[] = message.split(`\n`);
     this.users.forEach(user => {
-      if (user.nickname !== fromUser) {
-        user.socket.write(msgToSend);
-      }
+      messages.forEach(msg => {
+        const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${msg}\n`;
+        if (user.nickname !== fromUser) {
+          user.socket.write(msgToSend);
+        }
+      });
     });
   }
 
