@@ -9,7 +9,7 @@ export const args = yargs
 .demandOption(`c`, `Configuration File missing!`)
 .option(`d`, {
   alias: `debug`,
-  describe: `Debug Mode, Shows more Messages`,
+  describe: `Debug Mode, Shows more Messages (may slow Things down)`,
   type: `boolean`,
   default: true
 })

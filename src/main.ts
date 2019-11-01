@@ -1,4 +1,3 @@
-// import * as discordjs from 'discord.js';
 import {args} from './args';
 import * as fs from 'fs';
 import { Client } from './client';
@@ -8,8 +7,9 @@ import {IServer, IConfigFile} from './interfaces';
 args;
 const configFile: string = args.c;
 const debugMode: boolean = args.d;
+const myVersion: string = process.env.npm_package_version;
 
-console.log(`dircd started...`);
+console.log(`dircd v${myVersion} started...`);
 console.log(`Config File: ${configFile}`);
 
 if (!configFile || !fs.existsSync(configFile)) {

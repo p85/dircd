@@ -198,11 +198,12 @@ export class IRCD {
     username: string,
     hostname: string
   ): void {
+    const myVersion: string = process.env.npm_package_version;
     socket.write(
-      `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD\n`
+      `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD v${myVersion}\n`
     );
     socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :guess we're online.\n`
+      `:${nickname}!${username}@${hostname} 003 ${nickname} :looks like we're online.\n`
     );
     socket.write(
       `:${nickname}!${username}@${hostname} 003 ${nickname} :---\n`
