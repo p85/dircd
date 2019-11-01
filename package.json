@@ -1,16 +1,24 @@
 {
   "name": "dircd",
   "version": "1.0.0",
-  "description": "irc -> discord gateway",
+  "description": "irc -> discord gateway/bridge",
   "main": "main.js",
+  "repository": {
+    "url": "https://github.com/p85/dircd"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "node_modules\\.bin\\tsc --watch",
     "build": "node_modules\\.bin\\tsc"
   },
-  "keywords": ["discord","irc","gateway","bridge"],
+  "keywords": [
+    "discord",
+    "irc",
+    "gateway",
+    "bridge"
+  ],
   "author": "Patrick P.",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^11.5.1",
     "typescript": "^3.6.4",
