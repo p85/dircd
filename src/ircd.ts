@@ -1,6 +1,6 @@
 import * as Net from "net";
 import { Client } from "./client";
-import { IParsedUserLine, IParsedUserObject } from "./interfaces";
+import { IParsedUserLine, IParsedUserObject, IServer } from "./interfaces";
 
 
 
@@ -10,7 +10,7 @@ export class IRCD {
   constructor(
     private port: number = 6667,
     private debug: boolean = false,
-    private channels,
+    private channels: IServer[],
     private serverhostname: string = `localghost`,
     private clientInstance: Client
   ) {
@@ -20,7 +20,7 @@ export class IRCD {
   /**
    * Starts the IRC-Server, set up EventListeners...
    */
-  private startServer(): void {
+  private startServer(): void { // TODO: ugh, need some refactor
     const server = Net.createServer(socket => {
       let nick: boolean = false;
       let user: boolean = false;
