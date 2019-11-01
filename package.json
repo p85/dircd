@@ -1,0 +1,23 @@
+{
+  "name": "dircd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "node_modules\\.bin\\tsc --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "typescript": "^3.6.4",
+    "yargs": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.3",
+    "@types/typescript": "^2.0.0",
+    "@types/yargs": "^13.0.3"
+  }
+}
