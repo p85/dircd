@@ -7,10 +7,11 @@ interface IParsedUserLine {
   servername: string;
   username: string;
   hostname: string;
+  socket;
 }
 
 export class IRCD {
-  private users: IParsedUserLine[] = [];
+  private users: any[] = [];
 
   constructor(
     private port: number = 6667,
@@ -126,7 +127,7 @@ export class IRCD {
                     return chname === channelname;
                   });
                   const chid: string = channel.id;
-                  this.clientInstance.send(chid, msgValue);
+                  this.clientInstance.sendToDiscord(chid, msgValue);
                   break;
               }
             });
@@ -224,6 +225,12 @@ export class IRCD {
     username: string,
     hostname: string
   ): void {
+    this.users.push({
+      socket,
+      nickname,
+      username,
+      hostname
+    });
     this.loginMsg(socket, nickname, username, hostname);
     const joinCommands = this.joinAllChannels(nickname, username, hostname);
     const userJoinCommands = this.joinAllUsers();
@@ -231,5 +238,12 @@ export class IRCD {
     joinCommands.forEach(join => socket.write(join));
     this.debugMsg(`Joining Users... Total: ${userJoinCommands.length}`);
     userJoinCommands.forEach(join => socket.write(join));
+  }
+
+  public injectChannelMessage(servername: string, channelname: string, fromUser: string, message: string) {
+    const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${message}\n`;
+    this.users.forEach(user => {
+      user.socket.write(msgToSend);
+    });
   }
 }

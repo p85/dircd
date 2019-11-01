@@ -1,4 +1,5 @@
 import * as discordjs from "discord.js";
+import { IRCD } from "./ircd";
 
 export class Client {
   private client: discordjs.Client = new discordjs.Client({
@@ -7,6 +8,7 @@ export class Client {
   });
   public channels = [];
   public discordUser: string;
+  public ircd: IRCD;
 
   constructor(private token: string) {}
 
@@ -23,7 +25,10 @@ export class Client {
         return resolve();
       });
       this.client.on(`message`, msg => {
-        console.log(`msg: ${msg}`);
+        const chid: string = msg.channel.id;
+        // const userid: string = msg.author.id;
+        const fromUser: string = msg.author.username;
+        this.receiveFromDiscord(chid, fromUser, msg.cleanContent);
       });
       this.client.login(this.token);
     });
@@ -52,7 +57,24 @@ export class Client {
     return newChans;
   }
 
-  public send(channelId: string, message: string): void {
+  private receiveFromDiscord(channelId: string, fromUser: string, message: string): void {
+    const chan = this.getChannel(channelId);
+    if (!chan) return; // not supported message received?
+    const servername: string = chan.name.split(`.`)[0].trim();
+    const channelname: string = chan.name.split(`.`)[1].trim();
+    this.ircd.injectChannelMessage(servername, channelname, fromUser, message);
+  }
+
+  private getChannel(channelId: string) {
+    let cha;
+    this.channels.find(server => {
+      const haveChan = server.channels.find(ch => ch.id === channelId);
+      cha = haveChan;
+    });
+    return cha;
+  }
+
+  public sendToDiscord(channelId: string, message: string): void {
     const channel = this.client.channels.get(channelId);
     if (!channel) throw new Error(`Uh oh! this should never happen...channel not found :(`);
     channel[`send`](message);
