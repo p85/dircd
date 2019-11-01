@@ -1,4 +1,5 @@
 import * as Net from "net";
+import { Client } from "./client";
 
 interface IParsedUserLine {
   nickname: string;
@@ -15,7 +16,8 @@ export class IRCD {
     private port: number = 6667,
     private debug: boolean = false,
     private channels,
-    private serverhostname: string = `localghost`
+    private serverhostname: string = `localghost`,
+    private clientInstance: Client
   ) {
     this.startServer();
   }
@@ -30,15 +32,12 @@ export class IRCD {
       userObject.hostname = socket.remoteAddress;
       socket.on("connect", () => {
         console.log(`have connection from: ${userObject.hostname}`);
-        timerHandle = setInterval(
-          () => socket.write(`PING: ${Math.trunc(Math.random() * 10)}\n`),
-          1000
-        );
+        timerHandle = setInterval(() => socket.write(`PING: 1\n`), 1000);
       });
       socket.on("data", msg => {
         const readadbleMsg: string = msg.toString().trim();
         const readableMsgArr: string[] = readadbleMsg.split(`\n`);
-        this.debugMsg(`Received Message from IRC-Client: ${readadbleMsg}`);
+        // this.debugMsg(`Received Message from IRC-Client: ${readadbleMsg}`);
         if (!user || !nick) {
           this.debugMsg(`User has not been identified yet, but trying so...`);
           if (readableMsgArr.length > 0) {
@@ -100,7 +99,38 @@ export class IRCD {
             }
           }
         } else {
-          console.log(`past login...`);
+          // we are past login
+          if (readableMsgArr.length > 0) {
+            readableMsgArr.forEach(msg => {
+              let msgType: any | string = msg.split(` `);
+              if (msgType && msgType[0]) msgType = msgType[0].trim();
+              let msgParameter: any | string = msg.split(` `);
+              if (msgParameter && msgParameter[1])
+                msgParameter = msgParameter[1].trim();
+              let msgValue: any | string = msg.split(`:`);
+              if (msgValue && msgValue[1]) msgValue = msgValue[1].trim();
+              switch (msgType) {
+                case `PRIVMSG`:
+                  this.debugMsg(
+                    `send privmsg to ${msgParameter} with content: ${msgValue}`
+                  );
+                  const servername: string = msgParameter
+                    .split(`.`)[0]
+                    .slice(1);
+                  const channelname: string = msgParameter.split(`.`)[1];
+                  const server = this.channels.find(
+                    srv => srv.name === servername
+                  );
+                  const channel = server.channels.find(ch => {
+                    const chname: string = ch.name.split(`.`)[1].trim();
+                    return chname === channelname;
+                  });
+                  const chid: string = channel.id;
+                  this.clientInstance.send(chid, msgValue);
+                  break;
+              }
+            });
+          }
         }
       });
       socket.on("close", hasError => {
@@ -120,7 +150,7 @@ export class IRCD {
 
   private parseUser(line: string) {
     let parsedLine: string[] = line.split(`:`);
-    const realname =
+    const realname: string =
       parsedLine && parsedLine[1] ? parsedLine[1].replace(/ /g, `_`) : null;
     this.debugMsg(`Parsed Realname: ${realname}`);
     let rest = parsedLine[0].trim().split(` `);

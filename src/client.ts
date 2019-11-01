@@ -38,6 +38,7 @@ export class Client {
     const newChans = [];
     chans.forEach(channel => {
       let newChannel: any = {};
+      newChannel.id = channel.id;
       newChannel.name = `${servername}.${channel.name}`;
       newChannel.users = channel[`members`]
       .map(member => ({
@@ -45,13 +46,15 @@ export class Client {
         nickname: member.nickname
       }))
       .filter(member => member && member.nickname);
+      if (!newChannel.users || newChannel.users.length === 0) newChannel.users = [{id:0, nickname: ``}];
       newChans.push(newChannel);
     });
     return newChans;
   }
 
   public send(channelId: string, message: string): void {
-    // this.client.channels.get(`639754920441937940`)['send'](message);
-    // this.client.channels.get(id)['send'](message);
+    const channel = this.client.channels.get(channelId);
+    if (!channel) throw new Error(`Uh oh! this should never happen...channel not found :(`);
+    channel[`send`](message);
   }
 }

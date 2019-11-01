@@ -27,7 +27,7 @@ client.connect()
 .then(() => {
   // const discordUser: string = client.discordUser;
   const channels = client.channels;
-  const ircd: IRCD = new IRCD(6667, debugMode, channels);
+  const ircd: IRCD = new IRCD(6667, debugMode, channels, `localhorst`, client);
 })
 .catch(err => {
   console.error(`MainLoop Error: ${err}`);
