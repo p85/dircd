@@ -1,10 +1,16 @@
 # dircd
 A IRC to Discord Gateway
 
+## Requirements
+    node
+    npm
+___
+
 ## Installation
     npm install
     npm build
 ___
+## Running
 Take a look at config.json_example and create a config.json based of that.
 You can find your Discord Token [here](https://lmgtfy.com/?q=how+to+find+discord+token&s=g)
 
