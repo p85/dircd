@@ -76,6 +76,10 @@ export class Client {
   public sendToDiscord(channelId: string, message: string): void {
     const channel = this.client.channels.get(channelId);
     if (!channel) throw new Error(`Uh oh! this should never happen...channel not found :(`);
-    channel[`send`](message);
+    channel[`send`](message); // Bug in discord.js Type Definition, send() definitly exists!
+  }
+
+  public sendToDiscordUser(userId: string, message: string): void {
+
   }
 }

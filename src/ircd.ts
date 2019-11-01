@@ -115,7 +115,8 @@ export class IRCD {
                   this.debugMsg(
                     `send privmsg to ${msgParameter} with content: ${msgValue}`
                   );
-                  const servername: string = msgParameter
+                  if (msgParameter.startsWith(`#`)) {
+                    const servername: string = msgParameter
                     .split(`.`)[0]
                     .slice(1);
                   const channelname: string = msgParameter.split(`.`)[1];
@@ -128,6 +129,10 @@ export class IRCD {
                   });
                   const chid: string = channel.id;
                   this.clientInstance.sendToDiscord(chid, msgValue);
+                  } else {
+                    this.debugMsg(`Send Private Message`);
+                    console.log();
+                  }
                   break;
               }
             });
