@@ -101,10 +101,10 @@ export class IRCD {
               let msgType: any | string = msg.split(` `);
               if (msgType && msgType[0]) msgType = msgType[0].trim();
               let msgParameter: any | string = msg.split(` `);
-              if (msgParameter && msgParameter[1])
-                msgParameter = msgParameter[1].trim();
-              let msgValue: any | string = msg.split(`:`);
-              if (msgValue && msgValue[1]) msgValue = msgValue[1].trim();
+              if (msgParameter && msgParameter[1]) msgParameter = msgParameter[1].trim();
+              const msgIndex = msg.indexOf(`:`) + 1;
+              let msgValue: any | string =  msg.slice(msgIndex, msg.length).trim();
+              // if (msgValue && msgValue[1]) msgValue = msgValue[1].trim();
               switch (msgType) {
                 case `PRIVMSG`:
                   this.debugMsg(
