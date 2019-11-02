@@ -34,7 +34,7 @@ if (!discordToken) {
 console.log(`Found DiscordToken.`);
 console.log(`Starting Discord Client and IRCd...`);
 
-const client: Client = new Client(discordToken);
+const client: Client = new Client(discordToken, debugMode);
 client.connect()
 .then(() => {
   const channels: IServer[] = client.channels;

@@ -1,8 +1,13 @@
 import * as Net from "net";
 import { Client } from "./client";
-import { IParsedUserLine, IParsedUserObject, IServer, IOnlineUsers } from "./interfaces";
-import {AppVersion} from './appVersion';
-
+import {
+  IParsedUserLine,
+  IParsedUserObject,
+  IServer,
+  IOnlineUsers,
+  TOnOfflineState
+} from "./interfaces";
+import { AppVersion } from "./appVersion";
 
 export class IRCD {
   private users: IOnlineUsers[] = [];
@@ -21,7 +26,8 @@ export class IRCD {
   /**
    * Starts the IRC-Server, set up EventListeners...
    */
-  private startServer(): void { // TODO: ugh, need some refactor
+  private startServer(): void {
+    // TODO: ugh, need some refactor
     const server = Net.createServer(socket => {
       let nick: boolean = false;
       let user: boolean = false;
@@ -102,10 +108,12 @@ export class IRCD {
               let msgType: any | string = msg.split(` `);
               if (msgType && msgType[0]) msgType = msgType[0].trim();
               let msgParameter: any | string = msg.split(` `);
-              if (msgParameter && msgParameter[1]) msgParameter = msgParameter[1].trim();
+              if (msgParameter && msgParameter[1])
+                msgParameter = msgParameter[1].trim();
               const msgIndex = msg.indexOf(`:`) + 1;
-              let msgValue: any | string =  msg.slice(msgIndex, msg.length).trim();
-              // if (msgValue && msgValue[1]) msgValue = msgValue[1].trim();
+              let msgValue: any | string = msg
+                .slice(msgIndex, msg.length)
+                .trim();
               switch (msgType) {
                 case `PRIVMSG`:
                   this.debugMsg(
@@ -113,21 +121,24 @@ export class IRCD {
                   );
                   if (msgParameter.startsWith(`#`)) {
                     const servername: string = msgParameter
-                    .split(`.`)[0]
-                    .slice(1);
-                  const channelname: string = msgParameter.split(`.`)[1];
-                  const server = this.channels.find(
-                    srv => srv.name === servername
-                  );
-                  const channel = server.channels.find(ch => {
-                    const chname: string = ch.name.split(`.`)[1].trim();
-                    return chname === channelname;
-                  });
-                  const chid: string = channel.id;
-                  this.clientInstance.sendToDiscord(chid, msgValue);
+                      .split(`.`)[0]
+                      .slice(1);
+                    const channelname: string = msgParameter.split(`.`)[1];
+                    const server = this.channels.find(
+                      srv => srv.name === servername
+                    );
+                    const channel = server.channels.find(ch => {
+                      const chname: string = ch.name.split(`.`)[1].trim();
+                      return chname === channelname;
+                    });
+                    const chid: string = channel.id;
+                    this.clientInstance.sendToDiscord(chid, msgValue);
                   } else {
                     this.debugMsg(`Send Private Message`);
-                    this.clientInstance.sendToDiscordUser(msgParameter, msgValue);
+                    this.notifyUser(
+                      `Sorry, Private Messages to another Users are not supported yet :(`
+                    );
+                    // this.clientInstance.sendToDiscordUser(msgParameter, msgValue);
                   }
                   break;
               }
@@ -144,7 +155,9 @@ export class IRCD {
     if (this.listenOnAll) {
       server.listen(this.port);
       console.log(`IRCD started on Port ${this.port}, Listening on 0.0.0.0`);
-      console.log(`WARNING! Anyone can connect to this dircd instance and this is probably not that what you want!`);
+      console.log(
+        `WARNING! Anyone can connect to this dircd instance and this is probably not that what you want!`
+      );
     } else {
       server.listen(this.port, `127.0.0.1`);
       console.log(`IRCD started on Port ${this.port}, Listening on 127.0.0.1`);
@@ -193,9 +206,9 @@ export class IRCD {
   /**
    * Messages that will be send right after the Login, is being called by afterLogin(...)
    * @param socket
-   * @param nickname 
-   * @param username 
-   * @param hostname 
+   * @param nickname
+   * @param username
+   * @param hostname
    */
   private loginMsg(
     socket,
@@ -209,9 +222,7 @@ export class IRCD {
     socket.write(
       `:${nickname}!${username}@${hostname} 003 ${nickname} :looks like we're online.\n`
     );
-    socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :---\n`
-    );
+    socket.write(`:${nickname}!${username}@${hostname} 003 ${nickname} :---\n`);
     socket.write(
       `:${nickname}!${username}@${hostname} 003 ${nickname} :Please wait, while we attempt to join all your Channels...\n`
     );
@@ -220,8 +231,8 @@ export class IRCD {
   /**
    * Creates JOIN Commands for all the Channels you are in
    * @param nickname
-   * @param username 
-   * @param hostname 
+   * @param username
+   * @param hostname
    */
   private joinAllChannels(
     nickname: string,
@@ -263,9 +274,9 @@ export class IRCD {
   /**
    * These Actions will be peformed once a User successfully identified with the IRC-Server
    * @param socket
-   * @param nickname 
-   * @param username 
-   * @param hostname 
+   * @param nickname
+   * @param username
+   * @param hostname
    */
   private afterLogin(
     socket,
@@ -290,12 +301,17 @@ export class IRCD {
 
   /**
    * Writes a received Message to the connected IRC-Client(s), is being called by client.ts, DiscordClient.on('message)
-   * @param servername 
-   * @param channelname 
-   * @param fromUser 
-   * @param message 
+   * @param servername
+   * @param channelname
+   * @param fromUser
+   * @param message
    */
-  public injectChannelMessage(servername: string, channelname: string, fromUser: string, message: string) {
+  public injectChannelMessage(
+    servername: string,
+    channelname: string,
+    fromUser: string,
+    message: string
+  ) {
     const messages: string[] = message.split(`\n`);
     this.users.forEach(user => {
       messages.forEach(msg => {
@@ -309,11 +325,32 @@ export class IRCD {
 
   /**
    * Used to write a Notification to the User, only used for Error Notifiying!
-   * @param message 
+   * @param message
    */
   public notifyUser(message: string): void {
     this.users.forEach(user => {
       user.socket.write(`NOTICE * :${message}\n`);
+    });
+  }
+
+  public changeOnOfflineState(
+    nickname: string,
+    newState: TOnOfflineState
+  ): void {
+    this.channels.forEach(server => {
+      server.channels.forEach(chan => {
+        const chanName: string = chan.name;
+        chan.users.forEach(user => {
+          if (user.nickname === nickname && user.nickname) {
+            this.debugMsg(`change On/Offline State: New State ${newState} for ${nickname}`);
+            const modePrefix: string =
+              newState === `offline` || newState === `invisible` ? `-` : `+`;
+            user.mode = modePrefix === `-` ? `` as any : modePrefix;
+            const modeCommand: string = `:${this.serverhostname} MODE #${chanName} ${modePrefix}v ${user.nickname}\n`;
+            this.users.forEach(user => user.socket.write(modeCommand));
+          }
+        });
+      });
     });
   }
 }

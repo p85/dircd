@@ -14,6 +14,7 @@ export interface IServerChannelUser {
   id: string;
   nickname: string;
   tag: string;
+  mode: `` | `+` | `@`;
 }
 
 export interface IConfigFile {
@@ -43,3 +44,5 @@ export interface IParsedUserObject {
   servername: string;
   username: string;
 }
+
+export type TOnOfflineState = `online` | `idle` | `dnd` | `invisible` | `offline`;

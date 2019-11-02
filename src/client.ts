@@ -10,7 +10,7 @@ export class Client {
   public channels: IServer[] = [];
   public ircd: IRCD;
 
-  constructor(private token: string) {
+  constructor(private token: string, private debug: boolean) {
     console.log(`Starting Authentification with Discord...`);
   }
 
@@ -37,6 +37,87 @@ export class Client {
         if (this.ircd) {
           this.ircd.notifyUser(`client.ts: An Error happened: ${error.message}`);
         }
+      });
+      // When a new Channel is created
+      this.client.on(`channelCreate`, (channel: discordjs.Channel) => {
+
+      });
+      // When a Channel is deleted
+      this.client.on(`channelDelete`, (chan: discordjs.Channel) => {
+
+      });
+      // o Channel Update, name Change, topic Change
+      this.client.on(`channelUpdate`, (oldChan: discordjs.Channel, newChan: discordjs.Channel) => {
+
+      });
+      // debug?
+      this.client.on(`debug`, info => {
+        this.debugMsg(`on Debug: ${info}`);
+      });
+      // on websocket disconnect
+      this.client.on(`disconnect`, e => {
+        console.warn(`Got disconnected from Discord API`);
+      });
+      // on websocket error
+      this.client.on(`error`, error => {
+        console.error(`Websocket Error: ${error.message}`);
+      });
+      // on user ban server
+      this.client.on(`guildBanAdd`, (guild: discordjs.Guild, user: discordjs.User) => {
+
+      });
+      // on user unban server
+      this.client.on(`guildBanRemove`, (guild: discordjs.Guild, user: discordjs.User) => {
+        
+      });
+      // user creates new server
+      this.client.on(`guildCreate`, (guild: discordjs.Guild) => {
+
+      });
+      // user deletes server
+      this.client.on(`guildDelete`, (guild: discordjs.Guild) => {
+
+      });
+      // user joins guild
+      this.client.on(`guildMemberAdd`, (member: discordjs.GuildMember) => {
+
+      });
+      // user leaves guild or is kicked
+      this.client.on(`guildMemberRemove`, (member: discordjs.GuildMember) => {
+
+      });
+      // called when guild member updates, i.e. role, nickname
+      this.client.on(`guildMemberUpdate`, (oldMember: discordjs.GuildMember, newMember: discordjs.GuildMember) => {
+
+      });
+      // guild outtage due to server fail
+      this.client.on(`guildUnavailable`, (guild: discordjs.Guild) => {
+        if (this.ircd) this.ircd.notifyUser(`Server ${guild.name} became unavailable due to Server Outtage!`);
+        console.warn(`Server ${guild.name} became unavailable due to Server Outtage!`);
+      });
+      // on guild update, i.e. name change
+      this.client.on(`guildUpdate`, (oldGuild: discordjs.Guild, newGuild: discordjs.Guild) => {
+
+      });
+      // presence update, possible off or online?
+      this.client.on(`presenceUpdate`, (_oldMember: discordjs.GuildMember, newMember: discordjs.GuildMember) => {
+        if (this.ircd) this.ircd.changeOnOfflineState(newMember.nickname, newMember.presence.status);
+      });
+      // reconnect to websocket
+      this.client.on(`reconnecting`, () => {
+        console.info(`Websocket reconnecting to Discord API`);
+      });
+      // resume websocket
+      this.client.on(`resume`, (replayed: number) => {
+        console.info(`Websocket successfully resumed, replayed ${replayed} Events`);
+      });
+      // on user update, i.e. change nickname
+      this.client.on(`userUpdate`, (oldUser: discordjs.User, newUser: discordjs.User) => {
+
+      });
+      // for warnigns
+      this.client.on(`warn`, info => {
+        this.debugMsg(`on Warn: ${info}`);
       });
       this.client.login(this.token); // try discord login
     });
@@ -66,10 +147,11 @@ export class Client {
       .map(member => ({
         id: member.id,
         nickname: member.nickname,
-        tag: member.user.tag
+        tag: member.user.tag,
+        mode: ``
       }))
       .filter(member => member && member.nickname);
-      if (!newChannel.users || newChannel.users.length === 0) newChannel.users = [{id:0, nickname: ``}];
+      if (!newChannel.users || newChannel.users.length === 0) newChannel.users = [{id:0, nickname: ``, mode: ``}]; // apply a fake user to show empty channels
       newChans.push(newChannel);
     });
     return newChans;
@@ -154,5 +236,13 @@ export class Client {
       return;
     }
     user[`send`](message); // Bug in discord.js Type Definition, send() definitly exists!
+  }
+
+    /**
+   * Print a Debug Message, when DebugMode is enabled
+   * @param msg
+   */
+  private debugMsg(msg: string): void {
+    if (this.debug) console.log(msg);
   }
 }
