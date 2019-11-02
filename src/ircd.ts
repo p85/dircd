@@ -1,6 +1,7 @@
 import * as Net from "net";
 import { Client } from "./client";
 import { IParsedUserLine, IParsedUserObject, IServer, IOnlineUsers } from "./interfaces";
+import {AppVersion} from './appVersion';
 
 
 export class IRCD {
@@ -202,9 +203,8 @@ export class IRCD {
     username: string,
     hostname: string
   ): void {
-    const myVersion: string = process.env.npm_package_version;
     socket.write(
-      `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD v${myVersion}\n`
+      `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD v${AppVersion.getVersion()}\n`
     );
     socket.write(
       `:${nickname}!${username}@${hostname} 003 ${nickname} :looks like we're online.\n`

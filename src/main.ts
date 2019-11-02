@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { Client } from './client';
 import { IRCD } from './ircd';
 import {IServer, IConfigFile} from './interfaces';
+import {AppVersion} from './appVersion';
 
 args;
 const configFile: string = args.c;
@@ -10,7 +11,7 @@ const debugMode: boolean = args.d;
 const myVersion: string = process.env.npm_package_version;
 const listenOnAll: boolean = args.i || false;
 
-console.log(`dircd v${myVersion} started...`);
+console.log(`dircd v${AppVersion.getVersion()} started...`);
 console.log(`Config File: ${configFile}`);
 
 if (!configFile || !fs.existsSync(configFile)) {
