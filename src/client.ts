@@ -40,11 +40,15 @@ export class Client {
       });
       // When a new Channel is created
       this.client.on(`channelCreate`, (channel: discordjs.Channel) => {
-
+        const serverName: string = channel[`guild`][`name`];
+        const channelName: string = channel[`name`];
+        this.ircd.joinChannel(serverName, channelName);
       });
       // When a Channel is deleted
-      this.client.on(`channelDelete`, (chan: discordjs.Channel) => {
-
+      this.client.on(`channelDelete`, (channel: discordjs.Channel) => {
+        const serverName: string = channel[`guild`][`name`];
+        const channelName: string = channel[`name`];
+        this.ircd.leaveChannel(serverName, channelName);
       });
       // o Channel Update, name Change, topic Change
       this.client.on(`channelUpdate`, (oldChan: discordjs.Channel, newChan: discordjs.Channel) => {

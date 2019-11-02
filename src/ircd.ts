@@ -369,4 +369,14 @@ export class IRCD {
     const topicChange: string = `:${topicSetBy} TOPIC #${serverName}.${channelName} :${newTopic}\n`;
     this.users.forEach(user => user.socket.write(topicChange));
   }
+
+  public joinChannel(serverName: string, channelName: string): void {
+    this.users.forEach(user => user.socket.write(`:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`));
+    const joinAll = this.joinAllUsers();
+    this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
+  }
+
+  public leaveChannel(serverName: string, channelName: string): void {
+    this.users.forEach(user => user.socket.write(`:${user.nickname}!${user.username}@${user.hostname} PART #${serverName}.${channelName}\n`));
+  }
 }
