@@ -48,7 +48,14 @@ export class Client {
       });
       // o Channel Update, name Change, topic Change
       this.client.on(`channelUpdate`, (oldChan: discordjs.Channel, newChan: discordjs.Channel) => {
-
+        const topicChanged: boolean = oldChan[`topic`] !== newChan[`topic`];
+        if (topicChanged) {
+          const newTopic: string = newChan[`topic`];
+          const serverName: string = newChan[`guild`][`name`];
+          const channelName: string = newChan[`name`];
+          const topicSetBy: string = newChan[`client`][`user`][`username`];
+          this.ircd.changeTopic(serverName, channelName, newTopic, topicSetBy);
+        }
       });
       // debug?
       this.client.on(`debug`, info => {

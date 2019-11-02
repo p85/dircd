@@ -333,6 +333,11 @@ export class IRCD {
     });
   }
 
+  /**
+   * Chnages the On/Offline State for a User, means, (de)voices a User on all his Channels
+   * @param nickname 
+   * @param newState 
+   */
   public changeOnOfflineState(
     nickname: string,
     newState: TOnOfflineState
@@ -352,5 +357,16 @@ export class IRCD {
         });
       });
     });
+  }
+
+  /**
+   * Changes the Topic on a Channel
+   * @param serverName 
+   * @param channelName 
+   * @param newTopic 
+   */
+  public changeTopic(serverName: string, channelName: string, newTopic: string, topicSetBy: string): void {
+    const topicChange: string = `:${topicSetBy} TOPIC #${serverName}.${channelName} :${newTopic}\n`;
+    this.users.forEach(user => user.socket.write(topicChange));
   }
 }
