@@ -119,13 +119,9 @@ export class Client {
       );
       // guild outtage due to server fail
       this.client.on(`guildUnavailable`, (guild: discordjs.Guild) => {
-        if (this.ircd)
-          this.ircd.notifyUser(
-            `Server ${guild.name} became unavailable due to Server Outtage!`
-          );
-        console.warn(
-          `Server ${guild.name} became unavailable due to Server Outtage!`
-        );
+        const msg: string = `Server ${guild.name} became unavailable due to Server Outtage!`;
+        if (this.ircd) this.ircd.notifyUser(msg);
+        console.warn(msg);
       });
       // on guild update, i.e. name change
       this.client.on(
@@ -141,7 +137,7 @@ export class Client {
         ) => {
           if (this.ircd)
             this.ircd.changeOnOfflineState(
-              newMember.nickname || newMember.displayName,
+              newMember.id,
               newMember.presence.status
             );
         }
@@ -195,7 +191,7 @@ export class Client {
       newChannel.users = channel[`members`]
         .map(member => ({
           id: member.id,
-          nickname: member.nickname || member.displayName,
+          nickname: member.user.username,
           tag: member.user.tag,
           mode:
             member.presence.status === `offline` ||
@@ -205,7 +201,7 @@ export class Client {
         }))
         .filter(member => member); // discard users without actual nicknames
       if (!newChannel.users || newChannel.users.length === 0)
-        newChannel.users = [{ id: 0, nickname: ``, mode: `` }]; // apply a fake user to show empty channels
+        newChannel.users = [{ id: 0, nickname: ``, mode: ``, tag: `` }]; // apply a fake user to show empty channels
       newChans.push(newChannel);
     });
     return newChans;
@@ -255,10 +251,7 @@ export class Client {
     let foundUser;
     this.channels.forEach(server => {
       server.channels.forEach(ch => {
-        const haveUser = ch.users.find(user => {
-          console.log(user.nickname);
-          return user.nickname === nickname;
-        });
+        const haveUser = ch.users.find(user => user.nickname === nickname);
         if (!foundUser && haveUser) foundUser = haveUser;
       });
     });

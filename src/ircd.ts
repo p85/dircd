@@ -375,21 +375,14 @@ export class IRCD {
    * @param nickname
    * @param newState
    */
-  public changeOnOfflineState(
-    nickname: string,
-    newState: TOnOfflineState
-  ): void {
+  public changeOnOfflineState(userId: string, newState: TOnOfflineState): void {
     this.channels.forEach(server => {
       server.channels.forEach(chan => {
         const chanName: string = chan.name;
         chan.users.forEach(user => {
-          if (
-            user.nickname === nickname &&
-            user.nickname &&
-            this.canApplyModeChange(user, newState)
-          ) {
+          if (user.id === userId && this.canApplyModeChange(user, newState)) {
             this.debugMsg(
-              `change On/Offline State: New State ${newState} for ${nickname}`
+              `change On/Offline State: New State ${newState} for ${user.nickname}`
             );
             const modePrefix: string =
               newState === `offline` || newState === `invisible` ? `-` : `+`;
