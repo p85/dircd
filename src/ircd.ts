@@ -136,11 +136,13 @@ export class IRCD {
                     const chid: string = channel.id;
                     this.clientInstance.sendToDiscord(chid, msgValue);
                   } else {
-                    this.debugMsg(`Send Private Message`);
-                    this.notifyUser(
-                      `Sorry, Private Messages to another Users are not supported yet :(`
+                    this.debugMsg(
+                      `Send Private Message to ${msgParameter} Text: ${msgValue}`
                     );
-                    // this.clientInstance.sendToDiscordUser(msgParameter, msgValue);
+                    this.clientInstance.sendToDiscordUser(
+                      msgParameter,
+                      msgValue
+                    );
                   }
                   break;
                 case `NAMES`:
@@ -348,7 +350,7 @@ export class IRCD {
     channelname: string,
     fromUser: string,
     message: string
-  ) {
+  ): void {
     const messages: string[] = message.split(`\n`);
     this.users.forEach(user => {
       messages.forEach(msg => {
@@ -357,6 +359,20 @@ export class IRCD {
           user.socket.write(msgToSend);
         }
       });
+    });
+  }
+
+  /**
+   * Receives a Private Message
+   * @param fromUser
+   * @param message
+   */
+  public injectUserMessage(fromUser: string, message: string): void {
+    const myNickname: string[] = this.users.map(user => user.nickname);
+    if (myNickname.indexOf(fromUser) > -1) return; // dont send message to urself
+    this.users.forEach(user => {
+      const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG ${user.hostname} :${message}\n`;
+      user.socket.write(msgToSend);
     });
   }
 
@@ -431,11 +447,7 @@ export class IRCD {
     this.users.forEach(user => user.socket.write(topicChange));
   }
 
-  public joinChannel(
-    serverName: string,
-    channelName: string,
-    userObject: IOnlineUsers
-  ): void {
+  public joinChannel(serverName: string, channelName: string): void {
     this.users.forEach(user =>
       user.socket.write(
         `:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`
@@ -443,7 +455,7 @@ export class IRCD {
     );
     // const joinAll = this.joinAllUsers();
     // this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
-    if (userObject) this.namesCommand(`${serverName}.${channelName}`, null);
+    this.namesCommand(`${serverName}.${channelName}`, null);
   }
 
   public leaveChannel(serverName: string, channelName: string): void {

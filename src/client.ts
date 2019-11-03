@@ -49,7 +49,7 @@ export class Client {
       this.client.on(`channelCreate`, (channel: discordjs.Channel) => {
         const serverName: string = channel[`guild`][`name`];
         const channelName: string = channel[`name`];
-        this.ircd.joinChannel(serverName, channelName, null);
+        this.ircd.joinChannel(serverName, channelName);
       });
       // When a Channel is deleted
       this.client.on(`channelDelete`, (channel: discordjs.Channel) => {
@@ -221,15 +221,25 @@ export class Client {
     message: string
   ): void {
     const chan = this.getChannel(channelId);
-    if (!chan) {
+    const user = this.getUser(fromUser);
+    if (!chan && !user) {
       this.ircd.notifyUser(
-        `client.ts: receiveFromDiscord(...): Could not find Channel with Id: ${channelId}!`
+        `client.ts: receiveFromDiscord(...): Could not find Channel/User with Id: ${channelId}!`
       );
       return;
     }
-    const servername: string = chan.name.split(`.`)[0].trim();
-    const channelname: string = chan.name.split(`.`)[1].trim();
-    this.ircd.injectChannelMessage(servername, channelname, fromUser, message);
+    if (chan) {
+      const servername: string = chan.name.split(`.`)[0].trim();
+      const channelname: string = chan.name.split(`.`)[1].trim();
+      this.ircd.injectChannelMessage(
+        servername,
+        channelname,
+        fromUser,
+        message
+      );
+    } else if (user) {
+      this.ircd.injectUserMessage(fromUser, message);
+    }
   }
 
   /**
@@ -289,14 +299,14 @@ export class Client {
       );
       return;
     }
-    const user = this.client.channels.get(toUser.id);
+    const user = this.client.users.get(toUser.id);
     if (!user) {
       this.ircd.notifyUser(
         `client.ts: sendToDiscordUser(...): Could not find a User with this Id!`
       );
       return;
     }
-    user[`send`](message); // Bug in discord.js Type Definition, send() definitly exists!
+    user.send(message);
   }
 
   /**
