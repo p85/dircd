@@ -20,6 +20,8 @@ Once youre done, you can start the Program:
 
 Now you can take your favorite IRC-Client (mIRC/irssi) and just connect there.
 
+Online Users should have voice (+ infront of their nickname).
+
 ___
 
 Alternatively you can explore the Options:
