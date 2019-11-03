@@ -141,7 +141,7 @@ export class Client {
         ) => {
           if (this.ircd)
             this.ircd.changeOnOfflineState(
-              newMember.nickname,
+              newMember.nickname || newMember.displayName,
               newMember.presence.status
             );
         }
