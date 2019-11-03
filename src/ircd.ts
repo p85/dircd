@@ -415,8 +415,9 @@ export class IRCD {
       case `+`:
         if (newState === `offline` || newState === `invisible`) return true;
         break;
-      default:
+      case ``:
         if (newState !== `offline` && newState !== `invisible`) return true;
+        break;
     }
     return false;
   }

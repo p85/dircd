@@ -195,15 +195,15 @@ export class Client {
       newChannel.users = channel[`members`]
         .map(member => ({
           id: member.id,
-          nickname: member.nickname,
+          nickname: member.nickname || member.displayName,
           tag: member.user.tag,
           mode:
             member.presence.status === `offline` ||
-            member.presence.status === `invinsible`
+            member.presence.status === `invisible`
               ? ``
               : `+`
         }))
-        .filter(member => member && member.nickname); // discard users without actual nicknames
+        .filter(member => member); // discard users without actual nicknames
       if (!newChannel.users || newChannel.users.length === 0)
         newChannel.users = [{ id: 0, nickname: ``, mode: `` }]; // apply a fake user to show empty channels
       newChans.push(newChannel);
