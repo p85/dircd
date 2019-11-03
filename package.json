@@ -7,9 +7,12 @@
     "url": "https://github.com/p85/dircd"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "node_modules\\.bin\\tsc --watch",
-    "build": "node_modules\\.bin\\tsc"
+    "watch_win": "npm run clean_win && npm run tsc_watch",
+    "watch_linux": "npm run clean_linux && npm run tsc_watch",
+    "tsc_watch": "node_modules\\.bin\\tsc --watch",
+    "build": "node_modules\\.bin\\tsc",
+    "clean_win": "del /S /Q dist",
+    "clean_linux": "rm -rf dist/"
   },
   "keywords": [
     "discord",
