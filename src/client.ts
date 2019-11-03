@@ -191,7 +191,9 @@ export class Client {
       newChannel.users = channel[`members`]
         .map(member => ({
           id: member.id,
-          nickname: member.user.username,
+          nickname: member.user.username
+            ? member.user.username.replace(/ /g, `_`)
+            : `_NOTFOUND_${member.id.slice(2, 5)}`,
           tag: member.user.tag,
           mode:
             member.presence.status === `offline` ||

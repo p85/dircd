@@ -274,7 +274,7 @@ export class IRCD {
     this.channels.forEach(server => {
       server.channels.forEach(channel => {
         const channelname: string = channel.name;
-        channel.users.forEach(userInChan => {
+        channel.users.forEach(_userInChan => {
           joinCommands.push(
             `:${nickname}!${username}@${hostname} JOIN #${channelname}\n`
           );
@@ -443,8 +443,7 @@ export class IRCD {
     );
     // const joinAll = this.joinAllUsers();
     // this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
-    if (userObject)
-      this.namesCommand(`${serverName}.${channelName}`, userObject);
+    if (userObject) this.namesCommand(`${serverName}.${channelName}`, null);
   }
 
   public leaveChannel(serverName: string, channelName: string): void {
@@ -455,6 +454,11 @@ export class IRCD {
     );
   }
 
+  /**
+   * Creates the Userlist for the /NAMES Command
+   * @param serverChannelName
+   * @param userObject
+   */
   private namesCommand(
     serverChannelName: string,
     userObject: IOnlineUsers
