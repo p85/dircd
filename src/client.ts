@@ -21,28 +21,35 @@ export class Client {
     return new Promise((resolve, reject) => {
       this.client.on(`ready`, () => {
         console.log(`Logged in as ${this.client.user.tag}`);
-        this.channels = this.client.guilds.array().map(g => ({ // Populate the Channels Array...
+        this.channels = this.client.guilds.array().map(g => ({
+          // Populate the Channels Array...
           id: g.id,
           name: this.getServerName(g.name),
-          channels: this.getChannelsOfServer(g.channels.array(), this.getServerName(g.name))
+          channels: this.getChannelsOfServer(
+            g.channels.array(),
+            this.getServerName(g.name)
+          )
         }));
         return resolve();
       });
-      this.client.on(`message`, msg => { // On Receiving a Message...
+      this.client.on(`message`, msg => {
+        // On Receiving a Message...
         const chid: string = msg.channel.id; // channelId
         const fromUser: string = msg.author.username; // received from User
         this.receiveFromDiscord(chid, fromUser, msg.cleanContent);
       });
       this.client.on(`error`, error => {
         if (this.ircd) {
-          this.ircd.notifyUser(`client.ts: An Error happened: ${error.message}`);
+          this.ircd.notifyUser(
+            `client.ts: An Error happened: ${error.message}`
+          );
         }
       });
       // When a new Channel is created
       this.client.on(`channelCreate`, (channel: discordjs.Channel) => {
         const serverName: string = channel[`guild`][`name`];
         const channelName: string = channel[`name`];
-        this.ircd.joinChannel(serverName, channelName);
+        this.ircd.joinChannel(serverName, channelName, null);
       });
       // When a Channel is deleted
       this.client.on(`channelDelete`, (channel: discordjs.Channel) => {
@@ -51,16 +58,24 @@ export class Client {
         this.ircd.leaveChannel(serverName, channelName);
       });
       // o Channel Update, name Change, topic Change
-      this.client.on(`channelUpdate`, (oldChan: discordjs.Channel, newChan: discordjs.Channel) => {
-        const topicChanged: boolean = oldChan[`topic`] !== newChan[`topic`];
-        if (topicChanged) {
-          const newTopic: string = newChan[`topic`];
-          const serverName: string = newChan[`guild`][`name`];
-          const channelName: string = newChan[`name`];
-          const topicSetBy: string = newChan[`client`][`user`][`username`];
-          this.ircd.changeTopic(serverName, channelName, newTopic, topicSetBy);
+      this.client.on(
+        `channelUpdate`,
+        (oldChan: discordjs.Channel, newChan: discordjs.Channel) => {
+          const topicChanged: boolean = oldChan[`topic`] !== newChan[`topic`];
+          if (topicChanged) {
+            const newTopic: string = newChan[`topic`];
+            const serverName: string = newChan[`guild`][`name`];
+            const channelName: string = newChan[`name`];
+            const topicSetBy: string = newChan[`client`][`user`][`username`];
+            this.ircd.changeTopic(
+              serverName,
+              channelName,
+              newTopic,
+              topicSetBy
+            );
+          }
         }
-      });
+      );
       // debug?
       this.client.on(`debug`, info => {
         this.debugMsg(`on Debug: ${info}`);
@@ -74,58 +89,78 @@ export class Client {
         console.error(`Websocket Error: ${error.message}`);
       });
       // on user ban server
-      this.client.on(`guildBanAdd`, (guild: discordjs.Guild, user: discordjs.User) => {
-
-      });
+      this.client.on(
+        `guildBanAdd`,
+        (guild: discordjs.Guild, user: discordjs.User) => {}
+      );
       // on user unban server
-      this.client.on(`guildBanRemove`, (guild: discordjs.Guild, user: discordjs.User) => {
-        
-      });
+      this.client.on(
+        `guildBanRemove`,
+        (guild: discordjs.Guild, user: discordjs.User) => {}
+      );
       // user creates new server
-      this.client.on(`guildCreate`, (guild: discordjs.Guild) => {
-
-      });
+      this.client.on(`guildCreate`, (guild: discordjs.Guild) => {});
       // user deletes server
-      this.client.on(`guildDelete`, (guild: discordjs.Guild) => {
-
-      });
+      this.client.on(`guildDelete`, (guild: discordjs.Guild) => {});
       // user joins guild
-      this.client.on(`guildMemberAdd`, (member: discordjs.GuildMember) => {
-
-      });
+      this.client.on(`guildMemberAdd`, (member: discordjs.GuildMember) => {});
       // user leaves guild or is kicked
-      this.client.on(`guildMemberRemove`, (member: discordjs.GuildMember) => {
-
-      });
+      this.client.on(
+        `guildMemberRemove`,
+        (member: discordjs.GuildMember) => {}
+      );
       // called when guild member updates, i.e. role, nickname
-      this.client.on(`guildMemberUpdate`, (oldMember: discordjs.GuildMember, newMember: discordjs.GuildMember) => {
-
-      });
+      this.client.on(
+        `guildMemberUpdate`,
+        (
+          oldMember: discordjs.GuildMember,
+          newMember: discordjs.GuildMember
+        ) => {}
+      );
       // guild outtage due to server fail
       this.client.on(`guildUnavailable`, (guild: discordjs.Guild) => {
-        if (this.ircd) this.ircd.notifyUser(`Server ${guild.name} became unavailable due to Server Outtage!`);
-        console.warn(`Server ${guild.name} became unavailable due to Server Outtage!`);
+        if (this.ircd)
+          this.ircd.notifyUser(
+            `Server ${guild.name} became unavailable due to Server Outtage!`
+          );
+        console.warn(
+          `Server ${guild.name} became unavailable due to Server Outtage!`
+        );
       });
       // on guild update, i.e. name change
-      this.client.on(`guildUpdate`, (oldGuild: discordjs.Guild, newGuild: discordjs.Guild) => {
-
-      });
+      this.client.on(
+        `guildUpdate`,
+        (oldGuild: discordjs.Guild, newGuild: discordjs.Guild) => {}
+      );
       // presence update, possible off or online?
-      this.client.on(`presenceUpdate`, (_oldMember: discordjs.GuildMember, newMember: discordjs.GuildMember) => {
-        if (this.ircd) this.ircd.changeOnOfflineState(newMember.nickname, newMember.presence.status);
-      });
+      this.client.on(
+        `presenceUpdate`,
+        (
+          _oldMember: discordjs.GuildMember,
+          newMember: discordjs.GuildMember
+        ) => {
+          if (this.ircd)
+            this.ircd.changeOnOfflineState(
+              newMember.nickname,
+              newMember.presence.status
+            );
+        }
+      );
       // reconnect to websocket
       this.client.on(`reconnecting`, () => {
         console.info(`Websocket reconnecting to Discord API`);
       });
       // resume websocket
       this.client.on(`resume`, (replayed: number) => {
-        console.info(`Websocket successfully resumed, replayed ${replayed} Events`);
+        console.info(
+          `Websocket successfully resumed, replayed ${replayed} Events`
+        );
       });
       // on user update, i.e. change nickname
-      this.client.on(`userUpdate`, (oldUser: discordjs.User, newUser: discordjs.User) => {
-
-      });
+      this.client.on(
+        `userUpdate`,
+        (oldUser: discordjs.User, newUser: discordjs.User) => {}
+      );
       // for warnigns
       this.client.on(`warn`, info => {
         this.debugMsg(`on Warn: ${info}`);
@@ -136,18 +171,21 @@ export class Client {
 
   /**
    * Formats the Servername, Replacing all Whitespaces with _ and alle Colons with a Pipe
-   * @param unformatted 
+   * @param unformatted
    */
   private getServerName(unformatted: string): string {
-    return unformatted.replace(/ /g, `_`).replace(/:/g, `|`)
+    return unformatted.replace(/ /g, `_`).replace(/:/g, `|`);
   }
 
   /**
    * Get all Channels within a Discord Server
-   * @param chanArr 
-   * @param servername 
+   * @param chanArr
+   * @param servername
    */
-  private getChannelsOfServer(chanArr: discordjs.GuildChannel[], servername: string): IServerChannel[] {
+  private getChannelsOfServer(
+    chanArr: discordjs.GuildChannel[],
+    servername: string
+  ): IServerChannel[] {
     const chans = chanArr.filter(ca => ca.type === `text`);
     const newChans = [];
     chans.forEach(channel => {
@@ -155,14 +193,19 @@ export class Client {
       newChannel.id = channel.id;
       newChannel.name = `${servername}.${channel.name}`;
       newChannel.users = channel[`members`]
-      .map(member => ({
-        id: member.id,
-        nickname: member.nickname,
-        tag: member.user.tag,
-        mode: ``
-      }))
-      .filter(member => member && member.nickname);
-      if (!newChannel.users || newChannel.users.length === 0) newChannel.users = [{id:0, nickname: ``, mode: ``}]; // apply a fake user to show empty channels
+        .map(member => ({
+          id: member.id,
+          nickname: member.nickname,
+          tag: member.user.tag,
+          mode:
+            member.presence.status === `offline` ||
+            member.presence.status === `invinsible`
+              ? ``
+              : `+`
+        }))
+        .filter(member => member && member.nickname); // discard users without actual nicknames
+      if (!newChannel.users || newChannel.users.length === 0)
+        newChannel.users = [{ id: 0, nickname: ``, mode: `` }]; // apply a fake user to show empty channels
       newChans.push(newChannel);
     });
     return newChans;
@@ -170,14 +213,20 @@ export class Client {
 
   /**
    * Is being called, when a new Message is being received from Discord
-   * @param channelId 
-   * @param fromUser 
-   * @param message 
+   * @param channelId
+   * @param fromUser
+   * @param message
    */
-  private receiveFromDiscord(channelId: string, fromUser: string, message: string): void {
+  private receiveFromDiscord(
+    channelId: string,
+    fromUser: string,
+    message: string
+  ): void {
     const chan = this.getChannel(channelId);
     if (!chan) {
-      this.ircd.notifyUser(`client.ts: receiveFromDiscord(...): Could not find Channel with Id: ${channelId}!`);
+      this.ircd.notifyUser(
+        `client.ts: receiveFromDiscord(...): Could not find Channel with Id: ${channelId}!`
+      );
       return;
     }
     const servername: string = chan.name.split(`.`)[0].trim();
@@ -187,7 +236,7 @@ export class Client {
 
   /**
    * Returns a Channel Object, respecting the given channelId
-   * @param channelId 
+   * @param channelId
    */
   private getChannel(channelId: string): IServerChannel {
     let channel: IServerChannel;
@@ -200,7 +249,7 @@ export class Client {
 
   /**
    * Finds a User by their nickname
-   * @param nickname 
+   * @param nickname
    */
   private getUser(nickname: string): IServerChannelUser {
     let foundUser;
@@ -218,13 +267,15 @@ export class Client {
 
   /**
    * Sends a Message to a Discord Channel
-   * @param channelId 
-   * @param message 
+   * @param channelId
+   * @param message
    */
   public sendToDiscord(channelId: string, message: string): void {
     const channel = this.client.channels.get(channelId);
     if (!channel) {
-      this.ircd.notifyUser(`client.ts: sendToDiscord(...): Could not find the Discord Channel with the ID: ${channelId}!`);
+      this.ircd.notifyUser(
+        `client.ts: sendToDiscord(...): Could not find the Discord Channel with the ID: ${channelId}!`
+      );
       return;
     }
     channel[`send`](message); // Bug in discord.js Type Definition, send() definitly exists!
@@ -232,24 +283,28 @@ export class Client {
 
   /**
    * Sends a Message to a Discord User
-   * @param nickname 
-   * @param message 
+   * @param nickname
+   * @param message
    */
   public sendToDiscordUser(nickname: string, message: string): void {
     const toUser = this.getUser(nickname);
     if (!toUser) {
-      this.ircd.notifyUser(`client.ts: sendToDiscordUser(...): Could not find the User to Message or you tried to message yourself?`);
+      this.ircd.notifyUser(
+        `client.ts: sendToDiscordUser(...): Could not find the User to Message or you tried to message yourself?`
+      );
       return;
     }
     const user = this.client.channels.get(toUser.id);
     if (!user) {
-      this.ircd.notifyUser(`client.ts: sendToDiscordUser(...): Could not find a User with this Id!`);
+      this.ircd.notifyUser(
+        `client.ts: sendToDiscordUser(...): Could not find a User with this Id!`
+      );
       return;
     }
     user[`send`](message); // Bug in discord.js Type Definition, send() definitly exists!
   }
 
-    /**
+  /**
    * Print a Debug Message, when DebugMode is enabled
    * @param msg
    */

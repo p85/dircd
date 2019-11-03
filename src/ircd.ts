@@ -5,7 +5,8 @@ import {
   IParsedUserObject,
   IServer,
   IOnlineUsers,
-  TOnOfflineState
+  TOnOfflineState,
+  IServerChannelUser
 } from "./interfaces";
 import { AppVersion } from "./appVersion";
 
@@ -97,7 +98,8 @@ export class IRCD {
                 socket,
                 userObject.nickname,
                 userObject.username,
-                userObject.hostname
+                userObject.hostname,
+                userObject
               );
             }
           }
@@ -141,6 +143,8 @@ export class IRCD {
                     // this.clientInstance.sendToDiscordUser(msgParameter, msgValue);
                   }
                   break;
+                case `NAMES`:
+                  break;
               }
             });
           }
@@ -162,6 +166,33 @@ export class IRCD {
       server.listen(this.port, `127.0.0.1`);
       console.log(`IRCD started on Port ${this.port}, Listening on 127.0.0.1`);
     }
+  }
+
+  /**
+   * Returns a List of Usernames of a given Channel
+   * @param channel Contains #Servername.Channelname
+   */
+  public getUsernamesOfChannel(channel: string): string {
+    const serverName: string = channel.split(`.`)[0];
+    const channelName: string = channel.split(`.`)[1];
+    const server = this.channels.find(serv => serv.name === serverName);
+    if (!server) {
+      this.notifyUser(
+        `ircd.ts getUsernamesOfChannel(...): Cannot find Server ${serverName}`
+      );
+      return;
+    }
+    const chan = server.channels.find(
+      ch => ch.name === `${serverName}.${channelName}`
+    );
+    if (!chan) {
+      this.notifyUser(
+        `ircd.ts getUsernamesOfChannel(...): Cannot find Channel ${channelName} within Server ${serverName}`
+      );
+      return;
+    }
+    if (chan.users)
+      return chan.users.map(user => `${user.mode}${user.nickname}`).join(` `);
   }
 
   /**
@@ -256,20 +287,20 @@ export class IRCD {
   /**
    * Creates JOIN Commands for all other available Users in those Channels
    */
-  private joinAllUsers(): string[] {
-    const joins: string[] = [];
-    this.channels.forEach(server => {
-      server.channels.forEach(channel => {
-        const channelname: string = channel.name;
-        channel.users.forEach(userInChan => {
-          joins.push(
-            `:${userInChan.nickname}!${userInChan.nickname}@discord JOIN #${channelname}\n`
-          );
-        });
-      });
-    });
-    return joins;
-  }
+  // private joinAllUsers(): string[] {
+  //   const joins: string[] = [];
+  //   this.channels.forEach(server => {
+  //     server.channels.forEach(channel => {
+  //       const channelname: string = channel.name;
+  //       channel.users.forEach(userInChan => {
+  //         joins.push(
+  //           `:${userInChan.nickname}!${userInChan.nickname}@discord JOIN #${channelname}\n`
+  //         );
+  //       });
+  //     });
+  //   });
+  //   return joins;
+  // }
 
   /**
    * These Actions will be peformed once a User successfully identified with the IRC-Server
@@ -282,7 +313,8 @@ export class IRCD {
     socket,
     nickname: string,
     username: string,
-    hostname: string
+    hostname: string,
+    userObject: IOnlineUsers
   ): void {
     this.users.push({
       socket,
@@ -292,11 +324,16 @@ export class IRCD {
     });
     this.loginMsg(socket, nickname, username, hostname);
     const joinCommands = this.joinAllChannels(nickname, username, hostname);
-    const userJoinCommands = this.joinAllUsers();
+    // const userJoinCommands = this.joinAllUsers();
     this.debugMsg(`Channels to Join Command: ${joinCommands.join(`\n`)}`);
     joinCommands.forEach(join => socket.write(join));
-    this.debugMsg(`Joining Users... Total: ${userJoinCommands.length}`);
-    userJoinCommands.forEach(join => socket.write(join));
+    // this.debugMsg(`Joining Users... Total: ${userJoinCommands.length}`);
+    // userJoinCommands.forEach(join => socket.write(join));
+    this.channels.forEach(server => {
+      server.channels.forEach(channel => {
+        this.namesCommand(channel.name, userObject);
+      });
+    });
   }
 
   /**
@@ -335,8 +372,8 @@ export class IRCD {
 
   /**
    * Chnages the On/Offline State for a User, means, (de)voices a User on all his Channels
-   * @param nickname 
-   * @param newState 
+   * @param nickname
+   * @param newState
    */
   public changeOnOfflineState(
     nickname: string,
@@ -346,11 +383,17 @@ export class IRCD {
       server.channels.forEach(chan => {
         const chanName: string = chan.name;
         chan.users.forEach(user => {
-          if (user.nickname === nickname && user.nickname) {
-            this.debugMsg(`change On/Offline State: New State ${newState} for ${nickname}`);
+          if (
+            user.nickname === nickname &&
+            user.nickname &&
+            this.canApplyModeChange(user, newState)
+          ) {
+            this.debugMsg(
+              `change On/Offline State: New State ${newState} for ${nickname}`
+            );
             const modePrefix: string =
               newState === `offline` || newState === `invisible` ? `-` : `+`;
-            user.mode = modePrefix === `-` ? `` as any : modePrefix;
+            user.mode = modePrefix === `-` ? (`` as any) : modePrefix;
             const modeCommand: string = `:${this.serverhostname} MODE #${chanName} ${modePrefix}v ${user.nickname}\n`;
             this.users.forEach(user => user.socket.write(modeCommand));
           }
@@ -358,25 +401,80 @@ export class IRCD {
       });
     });
   }
+  /**
+   * Determines if any Mode Change for a given User and his NewState needs to be applied
+   * @param channelUser
+   * @param newState
+   */
+  private canApplyModeChange(
+    channelUser: IServerChannelUser,
+    newState: TOnOfflineState
+  ): boolean {
+    switch (channelUser.mode) {
+      case `@`:
+      case `+`:
+        if (newState === `offline` || newState === `invisible`) return true;
+        break;
+      default:
+        if (newState !== `offline` && newState !== `invisible`) return true;
+    }
+    return false;
+  }
 
   /**
    * Changes the Topic on a Channel
-   * @param serverName 
-   * @param channelName 
-   * @param newTopic 
+   * @param serverName
+   * @param channelName
+   * @param newTopic
    */
-  public changeTopic(serverName: string, channelName: string, newTopic: string, topicSetBy: string): void {
+  public changeTopic(
+    serverName: string,
+    channelName: string,
+    newTopic: string,
+    topicSetBy: string
+  ): void {
     const topicChange: string = `:${topicSetBy} TOPIC #${serverName}.${channelName} :${newTopic}\n`;
     this.users.forEach(user => user.socket.write(topicChange));
   }
 
-  public joinChannel(serverName: string, channelName: string): void {
-    this.users.forEach(user => user.socket.write(`:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`));
-    const joinAll = this.joinAllUsers();
-    this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
+  public joinChannel(
+    serverName: string,
+    channelName: string,
+    userObject: IOnlineUsers
+  ): void {
+    this.users.forEach(user =>
+      user.socket.write(
+        `:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`
+      )
+    );
+    // const joinAll = this.joinAllUsers();
+    // this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
+    if (userObject)
+      this.namesCommand(`${serverName}.${channelName}`, userObject);
   }
 
   public leaveChannel(serverName: string, channelName: string): void {
-    this.users.forEach(user => user.socket.write(`:${user.nickname}!${user.username}@${user.hostname} PART #${serverName}.${channelName}\n`));
+    this.users.forEach(user =>
+      user.socket.write(
+        `:${user.nickname}!${user.username}@${user.hostname} PART #${serverName}.${channelName}\n`
+      )
+    );
+  }
+
+  private namesCommand(
+    serverChannelName: string,
+    userObject: IOnlineUsers
+  ): void {
+    this.debugMsg(`Names for Channel: ${serverChannelName}`);
+    let response: string = `:${this.serverhostname} 353 ${
+      userObject.nickname
+    } = #${serverChannelName} :${this.getUsernamesOfChannel(
+      serverChannelName
+    )} ${userObject.nickname}\n`;
+    if (userObject && userObject.socket) {
+      userObject.socket.write(response);
+    } else {
+      this.users.forEach(user => user.socket.write(response));
+    }
   }
 }
