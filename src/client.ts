@@ -15,10 +15,11 @@ export class Client {
   }
 
   /**
-   * Connects with the Discord API
+   * Connects with the Discord API and sets up the Event Handlers
+   * @returns void
    */
   public connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.client.on(`ready`, () => {
         console.log(`Logged in as ${this.client.user.tag}`);
         this.channels = this.client.guilds.array().map(g => ({
@@ -39,11 +40,9 @@ export class Client {
         this.receiveFromDiscord(chid, fromUser, msg.cleanContent);
       });
       this.client.on(`error`, error => {
-        if (this.ircd) {
-          this.ircd.notifyUser(
-            `client.ts: An Error happened: ${error.message}`
-          );
-        }
+        const errMsg: string = `client.ts: An Error happened: ${error.message}`;
+        if (this.ircd) this.ircd.notifyUser(errMsg);
+        console.error(errMsg);
       });
       // When a new Channel is created
       this.client.on(`channelCreate`, (channel: discordjs.Channel) => {
@@ -86,7 +85,9 @@ export class Client {
       });
       // on websocket error
       this.client.on(`error`, error => {
-        console.error(`Websocket Error: ${error.message}`);
+        const errMsg: string = `Websocket Error: ${error.message}`;
+        if (this.ircd) this.ircd.notifyUser(errMsg);
+        console.error(errMsg);
       });
       // on user ban server
       this.client.on(
@@ -119,9 +120,9 @@ export class Client {
       );
       // guild outtage due to server fail
       this.client.on(`guildUnavailable`, (guild: discordjs.Guild) => {
-        const msg: string = `Server ${guild.name} became unavailable due to Server Outtage!`;
-        if (this.ircd) this.ircd.notifyUser(msg);
-        console.warn(msg);
+        const errMsg: string = `Server ${guild.name} became unavailable due to Server Outtage!`;
+        if (this.ircd) this.ircd.notifyUser(errMsg);
+        console.warn(errMsg);
       });
       // on guild update, i.e. name change
       this.client.on(

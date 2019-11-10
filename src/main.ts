@@ -8,7 +8,6 @@ import {AppVersion} from './appVersion';
 args;
 const configFile: string = args.c;
 const debugMode: boolean = args.d;
-const myVersion: string = process.env.npm_package_version;
 const listenOnAll: boolean = args.i || false;
 
 console.log(`dircd v${AppVersion.getVersion()} started...`);
