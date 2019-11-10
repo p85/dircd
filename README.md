@@ -10,6 +10,11 @@ ___
     npm install
     npm build
 ___
+
+## Build the Code-Documentation
+    npm run typedoc
+The Documentation will be created in ./docs
+____
 ## Running
 Take a look at config.json_example and create a config.json based of that.
 You can find your Discord Token [here](https://lmgtfy.com/?q=how+to+find+discord+token&s=g)

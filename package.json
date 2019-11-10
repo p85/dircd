@@ -12,7 +12,8 @@
     "tsc_watch": "node_modules\\.bin\\tsc --watch",
     "build": "node_modules\\.bin\\tsc",
     "clean_win": "del /S /Q dist",
-    "clean_linux": "rm -rf dist/"
+    "clean_linux": "rm -rf dist/",
+    "typedoc" : "typedoc --out docs ./src"
   },
   "keywords": [
     "discord",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@types/node": "^12.12.3",
     "@types/typescript": "^2.0.0",
-    "@types/yargs": "^13.0.3"
+    "@types/yargs": "^13.0.3",
+    "typedoc": "^0.15.0"
   }
 }
