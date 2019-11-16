@@ -13,7 +13,7 @@
     "build": "node_modules\\.bin\\tsc",
     "clean_win": "del /S /Q dist",
     "clean_linux": "rm -rf dist/",
-    "typedoc" : "typedoc --out docs ./src"
+    "typedoc": "typedoc --out docs ./src"
   },
   "keywords": [
     "discord",
