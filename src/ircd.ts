@@ -19,7 +19,8 @@ export class IRCD {
     private channels: IServer[],
     private serverhostname: string = `localghost`,
     private clientInstance: Client,
-    private listenOnAll: boolean
+    private listenOnAll: boolean,
+    private joinChannels: string[]
   ) {
     this.startServer();
   }
@@ -273,14 +274,18 @@ export class IRCD {
     hostname: string
   ): string[] {
     let joinCommands: string[] = [];
+    if (this.joinChannels.length > 0) this.debugMsg(`Joinable Channels defined found in configuration file, will not join all channels...`);
     this.channels.forEach(server => {
       server.channels.forEach(channel => {
         const channelname: string = channel.name;
-        channel.users.forEach(_userInChan => {
-          joinCommands.push(
-            `:${nickname}!${username}@${hostname} JOIN #${channelname}\n`
-          );
-        });
+        const joinChannel: boolean = this.joinChannels.some(chanToJoin => channelname.includes(chanToJoin));
+        if (this.joinChannels.length === 0 || joinChannel) {
+          channel.users.forEach(_userInChan => {
+            joinCommands.push(
+              `:${nickname}!${username}@${hostname} JOIN #${channelname}\n`
+            );
+          });
+        }
       });
     });
     return joinCommands;

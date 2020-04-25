@@ -12,7 +12,9 @@
     "tsc_watch": "node_modules\\.bin\\tsc --watch",
     "build": "node_modules\\.bin\\tsc",
     "clean_win": "del /S /Q dist",
+    "clean_win_modules": "del /S /Q node_modules",
     "clean_linux": "rm -rf dist/",
+    "clean_linux_modules": "rm -rf node_modules",
     "typedoc": "typedoc --out docs ./src"
   },
   "keywords": [

@@ -5,6 +5,7 @@ import { IRCD } from './ircd';
 import {IServer, IConfigFile} from './interfaces';
 import {AppVersion} from './appVersion';
 
+
 args;
 const configFile: string = args.c;
 const debugMode: boolean = args.d;
@@ -22,7 +23,8 @@ console.log(`Reading Config File ${configFile}...`);
 const config: IConfigFile = JSON.parse(fs.readFileSync(configFile).toString());
 const discordToken: string = config.discordToken;
 const port: number = config.port || 6667;
-const localServerName: string = config.localServerName || `localghost`;
+const localServerName: string = `localghost`;
+const joinChannels: string[] = config.joinChannels || [];
 
 
 if (!discordToken) {
@@ -37,7 +39,7 @@ const client: Client = new Client(discordToken, debugMode);
 client.connect()
 .then(() => {
   const channels: IServer[] = client.channels;
-  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client, listenOnAll);
+  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client, listenOnAll, joinChannels);
   client.ircd = ircd; // TODO: this is ugly, needs to be done somewhat different...
 })
 .catch(err => {

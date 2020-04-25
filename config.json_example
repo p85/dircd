@@ -1,5 +1,9 @@
 {
   "discordToken": "<your-discord-token-here>" // how to find my discord token? --> https://lmgtfy.com/?q=how+to+find+discord+token&s=g
   "port": 6667,
-  "localServerName": "localghost"
+  "joinChannels": [
+    "ServerName.ChannelName",  // Joins ChannelName within the ServerName
+    "ServerName.",            // Joins all Channels in ServerName
+    ".help"                  // Join the help Channel within all Servers where it exists
+  ]
 }

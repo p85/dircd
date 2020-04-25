@@ -8,7 +8,7 @@ ___
 
 ## Installation
     npm install
-    npm build
+    npm run build
 ___
 
 ## Build the Code-Documentation

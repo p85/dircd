@@ -21,6 +21,7 @@ export interface IConfigFile {
   discordToken: string;
   port?: number;
   localServerName?: string;
+  joinChannels?: string[]
 }
 
 export interface IParsedUserLine {
