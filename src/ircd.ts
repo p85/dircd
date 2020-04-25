@@ -357,14 +357,25 @@ export class IRCD {
     message: string
   ): void {
     const messages: string[] = message.split(`\n`);
-    this.users.forEach(user => {
-      messages.forEach(msg => {
-        const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${msg}\n`;
-        if (user.nickname !== fromUser) {
-          user.socket.write(msgToSend);
-        }
+    let chanName: string = '';
+    if (servername && channelname) {
+      chanName = `${servername}.${channelname}`;
+    } else if (servername && !channelname) {
+      chanName = servername;
+    } else if (!servername && channelname) {
+      chanName = channelname;
+    }
+    const receiveThisMessage: boolean = this.joinChannels.some(jc => jc.includes(chanName));
+    if (this.joinChannels.length === 0 || receiveThisMessage) {
+      this.users.forEach(user => {
+        messages.forEach(msg => {
+          const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${msg}\n`;
+          if (user.nickname !== fromUser) {
+            user.socket.write(msgToSend);
+          }
+        });
       });
-    });
+    }
   }
 
   /**
