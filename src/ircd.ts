@@ -47,9 +47,7 @@ export class IRCD {
           this.debugMsg(`User has not been identified yet, but trying so...`);
           if (readableMsgArr.length > 0) {
             const messages: string[] = readableMsgArr.map(msgs => msgs.trim());
-            this.debugMsg(
-              `Multiple Commands on One Line, Splitting up into Message Queue (Total: ${messages.length})`
-            );
+            this.debugMsg(`Multiple Commands on One Line, Splitting up into Message Queue (Total: ${messages.length})`);
             messageQueue = messageQueue.concat(messages);
             for (let i = 0; i < messageQueue.length; i++) {
               const msg: string = messageQueue[i];
@@ -69,15 +67,8 @@ export class IRCD {
                 case "USER":
                   this.debugMsg(`Have USER Message, trying to parse...`);
                   const myUser = this.parseUser(msg);
-                  this.debugMsg(
-                    `Parsed User Line: ${JSON.stringify(myUser, null, 1)}`
-                  );
-                  if (
-                    myUser &&
-                    myUser.realname &&
-                    myUser.username &&
-                    myUser.servername
-                  ) {
+                  this.debugMsg(`Parsed User Line: ${JSON.stringify(myUser, null, 1)}`);
+                  if (myUser && myUser.realname && myUser.username && myUser.servername) {
                     userObject.realname = myUser.realname;
                     userObject.username = myUser.username;
                     userObject.servername = myUser.servername;
@@ -86,22 +77,12 @@ export class IRCD {
                   }
                   break;
                 default:
-                  this.debugMsg(
-                    `Expected NICK or USER from IRC-Client, but got instead: ${readadbleMsg}`
-                  );
-                  socket.write(
-                    `:${this.serverhostname} 451 * :Please Identify first\n`
-                  );
+                  this.debugMsg(`Expected NICK or USER from IRC-Client, but got instead: ${readadbleMsg}`);
+                  socket.write(`:${this.serverhostname} 451 * :Please Identify first\n`);
               }
             }
             if (user && nick) {
-              this.afterLogin(
-                socket,
-                userObject.nickname,
-                userObject.username,
-                userObject.hostname,
-                userObject
-              );
+              this.afterLogin(socket, userObject.nickname, userObject.username, userObject.hostname, userObject);
             }
           }
         } else {
@@ -109,27 +90,22 @@ export class IRCD {
           if (readableMsgArr.length > 0) {
             readableMsgArr.forEach(msg => {
               let msgType: any | string = msg.split(` `);
-              if (msgType && msgType[0]) msgType = msgType[0].trim();
+              if (msgType && msgType[0]) {
+                msgType = msgType[0].trim();
+              }
               let msgParameter: any | string = msg.split(` `);
-              if (msgParameter && msgParameter[1])
-                msgParameter = msgParameter[1].trim();
+              if (msgParameter && msgParameter[1]) {
+                  msgParameter = msgParameter[1].trim();
+              }
               const msgIndex = msg.indexOf(`:`) + 1;
-              let msgValue: any | string = msg
-                .slice(msgIndex, msg.length)
-                .trim();
+              let msgValue: any | string = msg.slice(msgIndex, msg.length).trim();
               switch (msgType) {
                 case `PRIVMSG`:
-                  this.debugMsg(
-                    `send privmsg to ${msgParameter} with content: ${msgValue}`
-                  );
+                  this.debugMsg(`send privmsg to ${msgParameter} with content: ${msgValue}`);
                   if (msgParameter.startsWith(`#`)) {
-                    const servername: string = msgParameter
-                      .split(`.`)[0]
-                      .slice(1);
+                    const servername: string = msgParameter.split(`.`)[0].slice(1);
                     const channelname: string = msgParameter.split(`.`)[1];
-                    const server = this.channels.find(
-                      srv => srv.name === servername
-                    );
+                    const server = this.channels.find(srv => srv.name === servername);
                     const channel = server.channels.find(ch => {
                       const chname: string = ch.name.split(`.`)[1].trim();
                       return chname === channelname;
@@ -137,13 +113,8 @@ export class IRCD {
                     const chid: string = channel.id;
                     this.clientInstance.sendToDiscord(chid, msgValue);
                   } else {
-                    this.debugMsg(
-                      `Send Private Message to ${msgParameter} Text: ${msgValue}`
-                    );
-                    this.clientInstance.sendToDiscordUser(
-                      msgParameter,
-                      msgValue
-                    );
+                    this.debugMsg(`Send Private Message to ${msgParameter} Text: ${msgValue}`);
+                    this.clientInstance.sendToDiscordUser(msgParameter, msgValue);
                   }
                   break;
                 case `NAMES`:
@@ -155,16 +126,17 @@ export class IRCD {
       });
       socket.on("close", hasError => {
         this.users = this.users.filter(u => u.nickname !== userObject.nickname);
-        if (timerHandle) clearInterval(timerHandle);
-        console.error(`Closing Connection: with Error?: ${hasError}`);
+        if (timerHandle) {
+          clearInterval(timerHandle);
+        }
+        const msg: string = `Closing Connection${hasError ? `: with Error: ${hasError}` : ``}`;
+        console.error(msg);
       });
     });
     if (this.listenOnAll) {
       server.listen(this.port);
       console.log(`IRCD started on Port ${this.port}, Listening on 0.0.0.0`);
-      console.log(
-        `WARNING! Anyone can connect to this dircd instance and this is probably not that what you want!`
-      );
+      console.log(`WARNING! Anyone can connect to this dircd instance and this is probably not that what you want!`);
     } else {
       server.listen(this.port, `127.0.0.1`);
       console.log(`IRCD started on Port ${this.port}, Listening on 127.0.0.1`);
@@ -173,25 +145,20 @@ export class IRCD {
 
   /**
    * Returns a List of Usernames of a given Channel
-   * @param channel Contains #Servername.Channelname
+   * @param {string} channel Contains #Servername.Channelname
+   * @returns {string}
    */
   public getUsernamesOfChannel(channel: string): string {
     const serverName: string = channel.split(`.`)[0];
     const channelName: string = channel.split(`.`)[1];
     const server = this.channels.find(serv => serv.name === serverName);
     if (!server) {
-      this.notifyUser(
-        `ircd.ts getUsernamesOfChannel(...): Cannot find Server ${serverName}`
-      );
+      this.notifyUser(`ircd.ts getUsernamesOfChannel(...): Cannot find Server ${serverName}`);
       return;
     }
-    const chan = server.channels.find(
-      ch => ch.name === `${serverName}.${channelName}`
-    );
+    const chan = server.channels.find(ch => ch.name === `${serverName}.${channelName}`);
     if (!chan) {
-      this.notifyUser(
-        `ircd.ts getUsernamesOfChannel(...): Cannot find Channel ${channelName} within Server ${serverName}`
-      );
+      this.notifyUser(`ircd.ts getUsernamesOfChannel(...): Cannot find Channel ${channelName} within Server ${serverName}`);
       return;
     }
     if (chan.users)
@@ -200,7 +167,8 @@ export class IRCD {
 
   /**
    * Parses the Nickname from the NICK Command
-   * @param line
+   * @param {string} line
+   * @returns {string}
    */
   private parseNick(line: string): string {
     const nickname: string[] = line.split(` `);
@@ -209,12 +177,12 @@ export class IRCD {
 
   /**
    * Parses the Data from the USER Command
-   * @param line
+   * @param {string} line
+   * @returns {IParsedUserObject}
    */
   private parseUser(line: string): IParsedUserObject {
     let parsedLine: string[] = line.split(`:`);
-    const realname: string =
-      parsedLine && parsedLine[1] ? parsedLine[1].replace(/ /g, `_`) : null;
+    const realname: string = parsedLine && parsedLine[1] ? parsedLine[1].replace(/ /g, `_`) : null;
     this.debugMsg(`Parsed Realname: ${realname}`);
     let rest = parsedLine[0].trim().split(` `);
     rest.shift(); // screw USER
@@ -222,69 +190,51 @@ export class IRCD {
     this.debugMsg(`Parsed Servername: ${servername}`);
     const username: string = rest.join(`_`);
     this.debugMsg(`Parsed Username: ${username}`);
-    return {
-      realname,
-      servername,
-      username
-    };
+    return {realname, servername, username};
   }
 
   /**
    * Print a Debug Message, when DebugMode is enabled
-   * @param msg
+   * @param {string} msg
    */
   private debugMsg(msg: string): void {
-    if (this.debug) console.log(msg);
+    if (this.debug) {
+      console.log(msg);
+    }
   }
 
   /**
    * Messages that will be send right after the Login, is being called by afterLogin(...)
    * @param socket
-   * @param nickname
-   * @param username
-   * @param hostname
+   * @param {string} nickname
+   * @param {string} username
+   * @param {string} hostname
    */
-  private loginMsg(
-    socket,
-    nickname: string,
-    username: string,
-    hostname: string
-  ): void {
-    socket.write(
-      `:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD v${AppVersion.getVersion()}\n`
-    );
-    socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :looks like we're online.\n`
-    );
+  private loginMsg(socket, nickname: string, username: string, hostname: string): void {
+    socket.write(`:${nickname}!${username}@${hostname} 001 ${nickname} :You are connected to DIRCD v${AppVersion.getVersion()}\n`);
+    socket.write(`:${nickname}!${username}@${hostname} 003 ${nickname} :looks like we're online.\n`);
     socket.write(`:${nickname}!${username}@${hostname} 003 ${nickname} :---\n`);
-    socket.write(
-      `:${nickname}!${username}@${hostname} 003 ${nickname} :Please wait, while we attempt to join all your Channels...\n`
-    );
+    socket.write(`:${nickname}!${username}@${hostname} 003 ${nickname} :Please wait, while we attempt to join all your Channels...\n`);
   }
 
   /**
    * Creates JOIN Commands for all the Channels you are in
-   * @param nickname
-   * @param username
-   * @param hostname
+   * @param {string} nickname
+   * @param {string} username
+   * @param {string} hostname
+   * @returns {string[]}
    */
-  private joinAllChannels(
-    nickname: string,
-    username: string,
-    hostname: string
-  ): string[] {
+  private joinAllChannels(nickname: string, username: string, hostname: string): string[] {
     let joinCommands: string[] = [];
-    if (this.joinChannels.length > 0) this.debugMsg(`Joinable Channels defined found in configuration file, will not join all channels...`);
+    if (this.joinChannels.length > 0) {
+      this.debugMsg(`Joinable Channels defined found in configuration file, will not join all channels...`);
+    }
     this.channels.forEach(server => {
       server.channels.forEach(channel => {
         const channelname: string = channel.name;
         const joinChannel: boolean = this.joinChannels.some(chanToJoin => channelname.includes(chanToJoin));
         if (this.joinChannels.length === 0 || joinChannel) {
-          channel.users.forEach(_userInChan => {
-            joinCommands.push(
-              `:${nickname}!${username}@${hostname} JOIN #${channelname}\n`
-            );
-          });
+          channel.users.forEach(_userInChan => joinCommands.push(`:${nickname}!${username}@${hostname} JOIN #${channelname}\n`));
         }
       });
     });
@@ -312,50 +262,29 @@ export class IRCD {
   /**
    * These Actions will be peformed once a User successfully identified with the IRC-Server
    * @param socket
-   * @param nickname
-   * @param username
-   * @param hostname
+   * @param {string} nickname
+   * @param {string} username
+   * @param {string} hostname
    */
-  private afterLogin(
-    socket,
-    nickname: string,
-    username: string,
-    hostname: string,
-    userObject: IOnlineUsers
-  ): void {
-    this.users.push({
-      socket,
-      nickname,
-      username,
-      hostname
-    });
+  private afterLogin(socket, nickname: string, username: string, hostname: string, userObject: IOnlineUsers): void {
+    this.users.push({socket, nickname, username, hostname});
     this.loginMsg(socket, nickname, username, hostname);
     const joinCommands = this.joinAllChannels(nickname, username, hostname);
-    // const userJoinCommands = this.joinAllUsers();
     this.debugMsg(`Channels to Join Command: ${joinCommands.join(`\n`)}`);
     joinCommands.forEach(join => socket.write(join));
-    // this.debugMsg(`Joining Users... Total: ${userJoinCommands.length}`);
-    // userJoinCommands.forEach(join => socket.write(join));
     this.channels.forEach(server => {
-      server.channels.forEach(channel => {
-        this.namesCommand(channel.name, userObject);
-      });
+      server.channels.forEach(channel => this.namesCommand(channel.name, userObject));
     });
   }
 
   /**
    * Writes a received Message to the connected IRC-Client(s), is being called by client.ts, DiscordClient.on('message)
-   * @param servername
-   * @param channelname
-   * @param fromUser
-   * @param message
+   * @param {string} servername
+   * @param {string} channelname
+   * @param {string} fromUser
+   * @param {string} message
    */
-  public injectChannelMessage(
-    servername: string,
-    channelname: string,
-    fromUser: string,
-    message: string
-  ): void {
+  public injectChannelMessage(servername: string, channelname: string, fromUser: string, message: string): void {
     const messages: string[] = message.split(`\n`);
     let chanName: string = '';
     if (servername && channelname) {
@@ -380,8 +309,8 @@ export class IRCD {
 
   /**
    * Receives a Private Message
-   * @param fromUser
-   * @param message
+   * @param {string} fromUser
+   * @param {string} message
    */
   public injectUserMessage(fromUser: string, message: string): void {
     const myNickname: string[] = this.users.map(user => user.nickname);
@@ -394,18 +323,16 @@ export class IRCD {
 
   /**
    * Used to write a Notification to the User, only used for Error Notifiying!
-   * @param message
+   * @param {string} message
    */
   public notifyUser(message: string): void {
-    this.users.forEach(user => {
-      user.socket.write(`NOTICE * :${message}\n`);
-    });
+    this.users.forEach(user => user.socket.write(`NOTICE * :${message}\n`));
   }
 
   /**
    * Chnages the On/Offline State for a User, means, (de)voices a User on all his Channels
-   * @param nickname
-   * @param newState
+   * @param {string} nickname
+   * @param {TOnOfflineState} newState
    */
   public changeOnOfflineState(userId: string, newState: TOnOfflineState): void {
     this.channels.forEach(server => {
@@ -413,11 +340,8 @@ export class IRCD {
         const chanName: string = chan.name;
         chan.users.forEach(user => {
           if (user.id === userId && this.canApplyModeChange(user, newState)) {
-            this.debugMsg(
-              `change On/Offline State: New State ${newState} for ${user.nickname}`
-            );
-            const modePrefix: string =
-              newState === `offline` || newState === `invisible` ? `-` : `+`;
+            this.debugMsg(`change On/Offline State: New State ${newState} for ${user.nickname}`);
+            const modePrefix: string = newState === `offline` || newState === `invisible` ? `-` : `+`;
             user.mode = modePrefix === `-` ? (`` as any) : modePrefix;
             const modeCommand: string = `:${this.serverhostname} MODE #${chanName} ${modePrefix}v ${user.nickname}\n`;
             this.users.forEach(user => user.socket.write(modeCommand));
@@ -426,15 +350,14 @@ export class IRCD {
       });
     });
   }
+
   /**
    * Determines if any Mode Change for a given User and his NewState needs to be applied
-   * @param channelUser
-   * @param newState
+   * @param {IServerChannelUser} channelUser
+   * @param {TOnOfflineState} newState
+   * @returns {boolean}
    */
-  private canApplyModeChange(
-    channelUser: IServerChannelUser,
-    newState: TOnOfflineState
-  ): boolean {
+  private canApplyModeChange(channelUser: IServerChannelUser, newState: TOnOfflineState): boolean {
     switch (channelUser.mode) {
       case `@`:
       case `+`:
@@ -449,31 +372,31 @@ export class IRCD {
 
   /**
    * Changes the Topic on a Channel
-   * @param serverName
-   * @param channelName
-   * @param newTopic
+   * @param {string} serverName
+   * @param {string} channelName
+   * @param {string} newTopic
+   * @param {string} topicSetBy
    */
-  public changeTopic(
-    serverName: string,
-    channelName: string,
-    newTopic: string,
-    topicSetBy: string
-  ): void {
+  public changeTopic(serverName: string, channelName: string, newTopic: string, topicSetBy: string): void {
     const topicChange: string = `:${topicSetBy} TOPIC #${serverName}.${channelName} :${newTopic}\n`;
     this.users.forEach(user => user.socket.write(topicChange));
   }
 
+  /**
+   * Sends a JOIN Command to connected Clients
+   * @param {string} serverName 
+   * @param {string} channelName 
+   */
   public joinChannel(serverName: string, channelName: string): void {
-    this.users.forEach(user =>
-      user.socket.write(
-        `:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`
-      )
-    );
-    // const joinAll = this.joinAllUsers();
-    // this.users.forEach(user => joinAll.forEach(j => user.socket.write(j)));
+    this.users.forEach(user => user.socket.write(`:${user.nickname}!${user.username}@${user.hostname} JOIN #${serverName}.${channelName}\n`));
     this.namesCommand(`${serverName}.${channelName}`, null);
   }
 
+  /**
+   * Sends a PART Message, when a User leaves a Server
+   * @param {string} serverName 
+   * @param {string} channelName 
+   */
   public leaveChannel(serverName: string, channelName: string): void {
     this.users.forEach(user =>
       user.socket.write(
@@ -484,19 +407,12 @@ export class IRCD {
 
   /**
    * Creates the Userlist for the /NAMES Command
-   * @param serverChannelName
-   * @param userObject
+   * @param {string} serverChannelName
+   * @param {IOnlineUsers} userObject
    */
-  private namesCommand(
-    serverChannelName: string,
-    userObject: IOnlineUsers
-  ): void {
+  private namesCommand(serverChannelName: string, userObject: IOnlineUsers): void {
     this.debugMsg(`Names for Channel: ${serverChannelName}`);
-    let response: string = `:${this.serverhostname} 353 ${
-      userObject.nickname
-    } = #${serverChannelName} :${this.getUsernamesOfChannel(
-      serverChannelName
-    )} ${userObject.nickname}\n`;
+    let response: string = `:${this.serverhostname} 353 ${userObject.nickname} = #${serverChannelName} :${this.getUsernamesOfChannel(serverChannelName)} ${userObject.nickname}\n`;
     if (userObject && userObject.socket) {
       userObject.socket.write(response);
     } else {

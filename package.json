@@ -26,14 +26,14 @@
   "author": "Patrick P.",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^11.5.1",
-    "typescript": "^3.6.4",
-    "yargs": "^14.2.0"
+    "discord.js": "11.5.1",
+    "typescript": "3.6.4",
+    "yargs": "14.2.0"
   },
   "devDependencies": {
-    "@types/node": "^12.12.3",
-    "@types/typescript": "^2.0.0",
-    "@types/yargs": "^13.0.3",
-    "typedoc": "^0.15.0"
+    "@types/node": "12.12.3",
+    "@types/typescript": "2.0.0",
+    "@types/yargs": "13.0.3",
+    "typedoc": "0.15.0"
   }
 }
