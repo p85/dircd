@@ -25,6 +25,7 @@ const discordToken: string = config.discordToken;
 const port: number = config.port || 6667;
 const localServerName: string = `localghost`;
 const joinChannels: string[] = config.joinChannels || [];
+const ignoreChannelBounds: boolean = config.ignoreChannelBounds || false;
 
 
 if (!discordToken) {
@@ -39,7 +40,7 @@ const client: Client = new Client(discordToken, debugMode);
 client.connect()
 .then(() => {
   const channels: IServer[] = client.channels;
-  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client, listenOnAll, joinChannels);
+  const ircd: IRCD = new IRCD(port, debugMode, channels, localServerName, client, listenOnAll, joinChannels, ignoreChannelBounds);
   client.ircd = ircd; // TODO: this is ugly, needs to be done somewhat different...
 })
 .catch(err => {

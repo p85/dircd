@@ -19,9 +19,9 @@ export interface IServerChannelUser {
 
 export interface IConfigFile {
   discordToken: string;
-  port?: number;
-  localServerName?: string;
-  joinChannels?: string[]
+  port?: number; // The Port to Listen on, Default is: 6667
+  joinChannels?: string[]; // define which channels to join, leave empty for all. Example: ['ServerX.', 'ServerY.ChannelA', '.ChannelB'], See more Examples in config.json_example
+  ignoreChannelBounds?: boolean; // when joinChannels are defined and this option is set, you will still receive all messages
 }
 
 export interface IParsedUserLine {

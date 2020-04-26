@@ -13,15 +13,7 @@ import { AppVersion } from "./appVersion";
 export class IRCD {
   private users: IOnlineUsers[] = [];
 
-  constructor(
-    private port: number = 6667,
-    private debug: boolean = false,
-    private channels: IServer[],
-    private serverhostname: string = `localghost`,
-    private clientInstance: Client,
-    private listenOnAll: boolean,
-    private joinChannels: string[]
-  ) {
+  constructor(private port: number = 6667, private debug: boolean = false, private channels: IServer[], private serverhostname: string = `localghost`, private clientInstance: Client, private listenOnAll: boolean, private joinChannels: string[], private ignoreChannelBounds: boolean) {
     this.startServer();
   }
 
@@ -295,7 +287,7 @@ export class IRCD {
       chanName = channelname;
     }
     const receiveThisMessage: boolean = this.joinChannels.some(jc => chanName.includes(jc));
-    if (this.joinChannels.length === 0 || receiveThisMessage) {
+    if (this.joinChannels.length === 0 || (this.joinChannels.length > 0 && this.ignoreChannelBounds) || receiveThisMessage) {
       this.users.forEach(user => {
         messages.forEach(msg => {
           const msgToSend: string = `:${fromUser}!${fromUser}@${fromUser} PRIVMSG #${servername}.${channelname} :${msg}\n`;
