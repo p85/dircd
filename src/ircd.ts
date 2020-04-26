@@ -365,7 +365,7 @@ export class IRCD {
     } else if (!servername && channelname) {
       chanName = channelname;
     }
-    const receiveThisMessage: boolean = this.joinChannels.some(jc => jc.includes(chanName));
+    const receiveThisMessage: boolean = this.joinChannels.some(jc => chanName.includes(jc));
     if (this.joinChannels.length === 0 || receiveThisMessage) {
       this.users.forEach(user => {
         messages.forEach(msg => {
